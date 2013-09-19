@@ -681,9 +681,7 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
             body['segmentType'] = profile['sub_type']
             body['addSegments'] = network['add_segment_list']
             body['delSegments'] = network['del_segment_list']
-#            LOG.debug("add_segments=%s", body['add_segments'])
             LOG.debug("add_segments=%s", body['addSegments'])
-#            LOG.debug("del_segments=%s", body['del_segments'])
             LOG.debug("del_segments=%s", body['delSegments'])
         else:
             body['mode'] = 'access'
