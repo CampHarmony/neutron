@@ -20,7 +20,9 @@ N1KV_PLUGIN = 1
 OVS_PLUGIN = 2
 ML2_PLUGIN = 3
 
+# T1 port/network is for VXLAN
 T1_PORT_NAME = 't1:'
+# T2 port/network is for VLAN
 T2_PORT_NAME = 't2:'
 T1_NETWORK_NAME = 't1_n:'
 T2_NETWORK_NAME = 't2_n:'
