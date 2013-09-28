@@ -83,7 +83,11 @@ router_appliance_opts = [
                       "as a pool of standby VMs")),
     cfg.IntOpt('csr1kv_booting_time', default=300,
                help=_("The time in seconds it typically takes to "
-                      "boot a CSR1kv VM"))
+                      "boot a CSR1kv VM")),
+    cfg.StrOpt('csr_config_path', default='./csr_cfgs',
+               help=_("Path of CSR default template")),
+    cfg.StrOpt('csr_config_template', default='cfg_template',
+               help=_("CSR default template file name")),
 ]
 
 # Segmentation types

@@ -28,6 +28,7 @@ from quantum.openstack.common import log as logging
 from quantum.plugins.cisco.l3.common import constants
 
 import pdb
+import netaddr
 
 LOG = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class ServiceVMManager:
         self._context = q_context.get_admin_context()
         #self._context.tenant_id=tenant_id
         self._core_plugin = manager.QuantumManager.get_plugin()
+        self.csr_config_template = "./csr_cfgs/cfg_template"
 
     def dispatch_service_vm(self, vm_image, vm_flavor, mgmt_port,
                             ports=None):
@@ -411,3 +413,30 @@ class ServiceVMManager:
         for net_id in nets_to_delete:
             self._core_plugin.delete_network(self._context, net_id)
         return True
+
+    def generate_config_for_csr(self, mgmtport):
+
+        ip_cidr = mgmtport['ip_cidr']
+        netmask = netaddr.IPNetwork(ip_cidr).netmask
+        mgmtip = ip_cidr.split('/')[0]
+
+        try:
+            config_template = csr_config_path + "/" + csr_config_template
+            csrvm_cfg = csr_config_path + "/csr_" + mgmtport[0:8]
+
+            ori = open(config_template, 'r')
+            cfg = open(csrvm_cfg, "w")
+            for line in ori:
+                if "<ip>" in line:
+                    line = line.replace("<ip>", mgmtip)
+                    line = line.replace("<mask>", netmask)
+                cfg.write(line)
+            cfg.close()
+            ori.close()
+            return csrvm_cfg
+        except IOError as e:
+            LOG.error(_('Error in creating config file. Error is: %s'), str(e))
+
+
+
+
