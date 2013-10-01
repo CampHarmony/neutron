@@ -44,7 +44,7 @@ class ServiceVMManager:
         self._context = q_context.get_admin_context()
         #self._context.tenant_id=tenant_id
         self._core_plugin = manager.QuantumManager.get_plugin()
-        self.csr_config_template = "./csr_cfgs/cfg_template"
+        #self.csr_config_template = "./csr_cfgs/cfg_template"
 
     def dispatch_service_vm(self, vm_image, vm_flavor, mgmt_port,
                             ports=None):
@@ -53,9 +53,13 @@ class ServiceVMManager:
         for port in ports:
             nics.append({'port-id': port['id']})
 
+        cfg = self.generate_config_for_csr(mgmt_port)
+        cfg_f = open(cfg) #Create a file descriptor
+
         try:
             server = self._nclient.servers.create('csr1kv_nrouter', vm_image,
-                                                  vm_flavor, nics=nics)
+                                                  vm_flavor, nics=nics,
+                                                  userdata=cfg_f)
         except (n_exc.UnsupportedVersion, n_exc.CommandError,
                 n_exc.AuthorizationFailure, n_exc.NoUniqueMatch,
                 n_exc.AuthSystemNotFound, n_exc.NoTokenLookupException,
@@ -421,8 +425,9 @@ class ServiceVMManager:
         mgmtip = ip_cidr.split('/')[0]
 
         try:
-            config_template = csr_config_path + "/" + csr_config_template
-            csrvm_cfg = csr_config_path + "/csr_" + mgmtport[0:8]
+            #ToDo: Check self.cfg
+            config_template = self.cfg.csr_config_path + "/" + self.cfg.csr_config_template
+            csrvm_cfg = self.cfg.csr_config_path + "/csr_" + mgmtport[0:8]
 
             ori = open(config_template, 'r')
             cfg = open(csrvm_cfg, "w")
