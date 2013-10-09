@@ -681,8 +681,10 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
             body['segmentType'] = profile['sub_type']
             body['addSegments'] = network['add_segment_list']
             body['delSegments'] = network['del_segment_list']
-            LOG.debug("add_segments=%s", body['add_segments'])
-            LOG.debug("del_segments=%s", body['del_segments'])
+#            LOG.debug("add_segments=%s", body['add_segments'])
+            LOG.debug("add_segments=%s", body['addSegments'])
+#            LOG.debug("del_segments=%s", body['del_segments'])
+            LOG.debug("del_segments=%s", body['delSegments'])
         else:
             body['mode'] = 'access'
             body['segmentType'] = profile['segment_type']
@@ -1183,7 +1185,7 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
         self._extend_port_dict_binding(context, port)
         return port
 
-    def delete_port(self, context, id):
+    def delete_port(self, context, id, l3_port_check=True):
         """
         Delete port
 
@@ -1191,7 +1193,13 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
         :param id: UUID representing the port to delete
         :returns: deleted port object
         """
+        # if needed, check to see if this is a port owned by
+        # and l3-router. If so, we should prevent deletion.
+        if l3_port_check:
+            self.prevent_l3_port_deletion(context, id)
+
         with context.session.begin(subtransactions=True):
+            self.disassociate_floatingips(context, id)
             self._send_delete_port_request(context, id)
             pt = super(N1kvQuantumPluginV2, self).delete_port(context, id)
             return pt

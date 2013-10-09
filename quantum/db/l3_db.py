@@ -427,6 +427,7 @@ class L3_NAT_db_mixin(l3.RouterPluginBase):
                 context, router_id, subnet_id)
             _network_id = port_db['network_id']
             self.delete_port(context, port_db['id'], l3_port_check=False)
+#            self.delete_port(context, port_db['id'])
         elif 'subnet_id' in interface_info:
             subnet_id = interface_info['subnet_id']
             self._confirm_router_interface_not_in_use(context, router_id,
@@ -447,6 +448,7 @@ class L3_NAT_db_mixin(l3.RouterPluginBase):
                         port_id = p['id']
                         _network_id = p['network_id']
                         self.delete_port(context, p['id'], l3_port_check=False)
+#                        self.delete_port(context, p['id'])
                         found = True
                         break
             except exc.NoResultFound:
