@@ -64,7 +64,7 @@ router_appliance_opts = [
                help=_("Default type of router to create")),
     cfg.IntOpt('csr1kv_flavor', default=621,
                help=_("Nova flavor used for CSR1kv VM")),
-    cfg.StrOpt('csr1kv_image', default='557d62a5-beb2-48b2-b7aa-0b49986b5a41',
+    cfg.StrOpt('csr1kv_image', default='338f3cc4-223f-4859-aa31-86debcde7546',
                help=_("Glance image used for CSR1kv VM")),
     cfg.StrOpt('management_network', default='osn_mgmt_nw',
                help=_("Name of management network for CSR VM configuration")),
@@ -83,7 +83,11 @@ router_appliance_opts = [
                       "as a pool of standby VMs")),
     cfg.IntOpt('csr1kv_booting_time', default=300,
                help=_("The time in seconds it typically takes to "
-                      "boot a CSR1kv VM"))
+                      "boot a CSR1kv VM")),
+    cfg.StrOpt('csr_config_path', default='./csr_cfgs',
+               help=_("Path of CSR default template")),
+    cfg.StrOpt('csr_config_template', default='cfg_template',
+               help=_("CSR default template file name")),
 ]
 
 # Segmentation types
