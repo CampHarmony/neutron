@@ -56,7 +56,7 @@ LOG = logging.getLogger(__name__)
 
 
 #TODO(bob-melander): Update this for the N1kv plugin
-TRUNKED_NETWORKS = trunkport.TRUNKED_NETWORKS
+TRUNKED_NETWORKS = 'trunked_networks'
 
 #TODO(bob-melander): Revisit these configurations to remove
 #some if possible
