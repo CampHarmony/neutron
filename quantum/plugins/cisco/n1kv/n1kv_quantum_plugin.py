@@ -59,7 +59,6 @@ from quantum.plugins.cisco.l3.db import l3_cfg_rpc_base
 from quantum.plugins.cisco.l3.db import l3_router_appliance_db
 from quantum.plugins.cisco.n1kv import n1kv_client
 from quantum import policy
-from quantum import scheduler
 
 
 LOG = logging.getLogger(__name__)
