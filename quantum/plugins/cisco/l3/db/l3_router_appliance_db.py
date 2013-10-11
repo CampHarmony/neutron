@@ -573,7 +573,7 @@ class L3_router_appliance_db_mixin(extraroute_db.ExtraRoute_db_mixin):
             for i in xrange(0, num):
                 #TODO(bobmel): Make service VM resources creation plugin aware
                 mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p = (
-                    svm.create_service_vm_resources_n1kv(
+                    svm.create_service_vm_resources(
                         self.mgmt_nw_id(),
                         self.csr_mgmt_sec_grp_id(),
                         self.l3_tenant_id(),
@@ -584,8 +584,8 @@ class L3_router_appliance_db_mixin(extraroute_db.ExtraRoute_db_mixin):
                         t1_n_p_id=self.n1kv_t1_np_id(),
                         t2_n_p_id=self.n1kv_t2_np_id()))
                 if mgmt_port is None:
-                     # Required ports could not be created
-                     return hosting_entities
+                    # Required ports could not be created
+                    return hosting_entities
                 #Zip and flatten the two port list together
                 ports = [x for t in zip(t1_p, t2_p) for x in t]
                 pdb.set_trace()
