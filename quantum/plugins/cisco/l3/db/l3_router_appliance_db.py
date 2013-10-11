@@ -48,7 +48,6 @@ from quantum.plugins.cisco.l3.common import constants as cl3_const
 from quantum import manager
 from quantum.openstack.common import log as logging
 from quantum.openstack.common import timeutils
-import quantum.scheduler
 
 import pdb
 
