@@ -574,6 +574,7 @@ class L3_router_appliance_db_mixin(extraroute_db.ExtraRoute_db_mixin):
                 #TODO(bobmel): Make service VM resources creation plugin aware
                 mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p = (
                     svm.create_service_vm_resources(
+                        self._plugin,
                         self.mgmt_nw_id(),
                         self.csr_mgmt_sec_grp_id(),
                         self.l3_tenant_id(),
