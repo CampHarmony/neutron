@@ -571,8 +571,9 @@ class L3_router_appliance_db_mixin(extraroute_db.ExtraRoute_db_mixin):
             # These resources are owned by the L3AdminTenant
             birth_date = timeutils.utcnow()
             for i in xrange(0, num):
+                #TODO(bobmel): Make service VM resources creation plugin aware
                 mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p = (
-                    svm.create_service_vm_resources(
+                    svm.create_service_vm_resources_n1kv(
                         self.mgmt_nw_id(),
                         self.csr_mgmt_sec_grp_id(),
                         self.l3_tenant_id(),

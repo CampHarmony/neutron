@@ -164,6 +164,15 @@ class ServiceVMManager:
                             'service vm due to %(err)s'),
                           {'net_id': item['id'], 'err': e})
 
+    def create_service_vm_resources(self, plugin, mgmt_nw_id, mgmt_sec_grp_id,
+                                    tenant_id, max_hosted, **kwargs):
+        if plugin == constants.N1KV_PLUGIN:
+            return self.create_service_vm_resources_n1kv(
+                mgmt_nw_id, mgmt_sec_grp_id, tenant_id, max_hosted, kwargs)
+        else:
+            return self.create_service_vm_resources_ovs(
+                mgmt_nw_id, mgmt_sec_grp_id, tenant_id, max_hosted)
+
     def create_service_vm_resources_n1kv(self, mgmt_nw_id, csr_mgmt_sec_grp_id,
                                          tenant_id, max_hosted, **kwargs):
         mgmt_port = None
@@ -266,8 +275,8 @@ class ServiceVMManager:
                 t1_n, t1_p, t2_n, t2_p = [], [], [], []
         return (mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p)
 
-    def create_service_vm_resources(self, mgmt_nw_id, csr_mgmt_sec_grp_id,
-                                    tenant_id, max_hosted):
+    def create_service_vm_resources_ovs(self, mgmt_nw_id, csr_mgmt_sec_grp_id,
+                                        tenant_id, max_hosted):
         mgmt_port = None
         t1_n, t1_p, t2_n, t2_p = [], [], [], []
         t1_sub, t2_sub = [], []
