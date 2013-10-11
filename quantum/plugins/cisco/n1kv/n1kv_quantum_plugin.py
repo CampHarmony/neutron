@@ -228,11 +228,11 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
         self._setup_vsm()
         self._setup_rpc()
         self.network_scheduler = importutils.import_object(
-            cfg.CONF.network_scheduler_driver)
+            q_conf.CONF.network_scheduler_driver)
         self.router_scheduler = importutils.import_object(
-            cfg.CONF.router_scheduler_driver)
+            q_conf.CONF.router_scheduler_driver)
         self.hosting_scheduler = importutils.import_object(
-            cfg.CONF.hosting_scheduler_driver)
+            q_conf.CONF.hosting_scheduler_driver)
 
     def _setup_rpc(self):
         # RPC support
