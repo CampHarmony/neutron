@@ -433,8 +433,7 @@ class L3_router_appliance_db_mixin(extraroute_db.ExtraRoute_db_mixin):
     def delete_router(self, context, id):
         # Collect info needed after parent has deleted router
         r_he_b = self.get_router_binding_info(context, id)
-        router = self._make_router_dict(r_he_b.router,
-                                        process_extensions=False)
+        router = self._make_router_dict(r_he_b.router)
         self._add_type_and_hosting_info(context, router,
                                         binding_info=r_he_b,
                                         schedule=False)
@@ -706,8 +705,7 @@ class L3_router_appliance_db_mixin(extraroute_db.ExtraRoute_db_mixin):
             query = query.filter(
                 RouterHostingEntityBinding.router_id == router_id)
         for r_he_binding in query:
-            router = self._make_router_dict(r_he_binding.router,
-                                            process_extensions=False)
+            router = self._make_router_dict(r_he_binding.router)
             router['router_type'] = r_he_binding['router_type']
             router['share_host'] = r_he_binding['share_hosting_entity']
             self.hosting_scheduler.schedule_router_on_hosting_entity(
