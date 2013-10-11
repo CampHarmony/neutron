@@ -42,6 +42,7 @@ from quantum.db import securitygroups_rpc_base as sg_db_rpc
 from quantum.extensions import portbindings
 from quantum.extensions import providernet
 from quantum.openstack.common import excutils
+from quantum.openstack.common import importutils
 from quantum.openstack.common import log as logging
 from quantum.openstack.common import rpc
 from quantum.openstack.common import uuidutils as uuidutils
@@ -53,9 +54,10 @@ from quantum.plugins.cisco.common import config as c_conf
 from quantum.plugins.cisco.db import n1kv_db_v2
 from quantum.plugins.cisco.db import network_db_v2
 from quantum.plugins.cisco.extensions import n1kv_profile
+from quantum.plugins.cisco.l3.db import composite_agentschedulers_db as agt_sch_db
+from quantum.plugins.cisco.l3.db import l3_cfg_rpc_base
 from quantum.plugins.cisco.l3.db import l3_router_appliance_db
 from quantum.plugins.cisco.n1kv import n1kv_client
-from quantum import policy
 from quantum import policy
 
 
@@ -64,6 +66,7 @@ LOG = logging.getLogger(__name__)
 
 class N1kvRpcCallbacks(dhcp_rpc_base.DhcpRpcCallbackMixin,
                        l3_rpc_base.L3RpcCallbackMixin,
+                       l3_cfg_rpc_base.L3CfgRpcCallbackMixin,
                        sg_db_rpc.SecurityGroupServerRpcCallbackMixin):
 
     """Class to handle agent RPC calls."""
@@ -185,7 +188,7 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
                           n1kv_db_v2.NetworkProfile_db_mixin,
                           n1kv_db_v2.PolicyProfile_db_mixin,
                           network_db_v2.Credential_db_mixin,
-                          agentschedulers_db.AgentSchedulerDbMixin):
+                          agt_sch_db.CompositeAgentSchedulerDbMixin):
 
     """
     Implement the Quantum abstractions using Cisco Nexus1000V
@@ -202,7 +205,8 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
                                    "policy_profile_binding",
                                    "network_profile_binding",
                                    "n1kv_profile", "network_profile",
-                                   "policy_profile", "router", "credential"]
+                                   "policy_profile", "router", "credential",
+                                   "agent_scheduler"]
 
     binding_view = "extension:port_binding:view"
     binding_set = "extension:port_binding:set"
@@ -223,6 +227,12 @@ class N1kvQuantumPluginV2(db_base_plugin_v2.QuantumDbPluginV2,
                 'extensions:quantum/plugins/cisco/extensions')
         self._setup_vsm()
         self._setup_rpc()
+        self.network_scheduler = importutils.import_object(
+            cfg.CONF.network_scheduler_driver)
+        self.router_scheduler = importutils.import_object(
+            cfg.CONF.router_scheduler_driver)
+        self.hosting_scheduler = importutils.import_object(
+            cfg.CONF.hosting_scheduler_driver)
 
     def _setup_rpc(self):
         # RPC support
