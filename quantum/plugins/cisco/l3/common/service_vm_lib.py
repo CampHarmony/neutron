@@ -290,7 +290,9 @@ class ServiceVMManager:
                               {'name': t2_n[i]['name'],
                                'id': t2_n[i]['id'],
                                'subnet': t2_sub[i]['id']})
-            except q_exc.QuantumException:
+            except q_exc.QuantumException as e:
+                LOG.error(_('Error %s when creating service VM resources. '
+                            'Cleaning up.'), e)
                 self.cleanup_for_service_vm_n1kv(mgmt_port, t1_n, t1_sub, t1_p,
                                                  t2_n, t2_sub, t2_p)
                 mgmt_port = None
