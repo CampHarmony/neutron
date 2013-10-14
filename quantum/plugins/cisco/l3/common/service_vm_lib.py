@@ -234,7 +234,7 @@ class ServiceVMManager:
                     p_spec['port'].update(
                         {'name': constants.T1_PORT_NAME + indx,
                          'network_id': t1_n[i]['id'],
-                         'fixed_ips': [{'subnet_id': t1_sub[i]}],
+#                         'fixed_ips': [{'subnet_id': t1_sub[i]}],
                          'n1kv:profile_id': kwargs.get('t1_p_p_id',
                                                        {}).get('id')})
                     t1_p.append(self._core_plugin.create_port(self._context,
@@ -265,7 +265,7 @@ class ServiceVMManager:
                     p_spec['port'].update(
                         {'name': constants.T2_PORT_NAME + indx,
                          'network_id': t2_n[i]['id'],
-                         'fixed_ips': [{'subnet_id': t2_sub[i]['id']}],
+#                         'fixed_ips': [{'subnet_id': t2_sub[i]['id']}],
                          'n1kv:profile_id': kwargs.get('t2_p_p_id',
                                                        {}).get('id')})
                     t2_p.append(self._core_plugin.create_port(self._context,
