@@ -92,6 +92,7 @@ class ServiceVMManager:
             result = False
         for net in nets_to_delete:
             try:
+                #TODO(bobmel): delete subnets first as required by N1kv plugin
                 self._core_plugin.delete_network(self._context, net)
             except q_exc.QuantumException as e:
                 LOG.error(_('Failed to delete network %(net_id)s for service '
@@ -99,6 +100,16 @@ class ServiceVMManager:
                                                             'vm_id': id,
                                                             'err': e})
         return result
+
+    def cleanup_for_service_vm(self, plugin, mgmt_port, t1_n, t1_sub, t1_p,
+                               t2_n, t2_sub, t2_p):
+        if plugin == constants.N1KV_PLUGIN:
+            self.cleanup_for_service_vm_n1kv(mgmt_port,
+                                             t1_n, t1_sub, t1_p,
+                                             t2_n, t2_sub, t2_p)
+        else:
+            self.cleanup_for_service_vm_ovs(mgmt_port, t1_n, t1_sub, t1_p,
+                                            t2_n, t2_sub, t2_p)
 
     def cleanup_for_service_vm_n1kv(self, mgmt_port, t1_n, t1_sub, t1_p,
                                     t2_n, t2_sub, t2_p):
@@ -132,8 +143,8 @@ class ServiceVMManager:
                             'service vm due to %(err)s'),
                           {'net_id': item['id'], 'err': e})
 
-    def cleanup_for_service_vm(self, mgmt_port, t1_n, t1_sub, t1_p,
-                               t2_n, t2_sub, t2_p):
+    def cleanup_for_service_vm_ovs(self, mgmt_port, t1_n, t1_sub, t1_p,
+                                   t2_n, t2_sub, t2_p):
          # Remove anything created.
         if mgmt_port is not None:
             try:
@@ -276,7 +287,8 @@ class ServiceVMManager:
                                'id': t2_n[i]['id'],
                                'subnet': t2_sub[i]['id']})
             except q_exc.QuantumException:
-                self.cleanup_for_service_vm(mgmt_port, t1_n, t2_n, t1_p, t2_p)
+                self.cleanup_for_service_vm_n1kv(mgmt_port, t1_n, t1_sub, t1_p,
+                                                 t2_n, t2_sub, t2_p)
                 mgmt_port = None
                 t1_n, t1_p, t2_n, t2_p = [], [], [], []
         return mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p
@@ -380,7 +392,8 @@ class ServiceVMManager:
                                'id': t2_n[i]['id'],
                                'subnet': t2_sub[i]['id']})
             except q_exc.QuantumException:
-                self.cleanup_for_service_vm(mgmt_port, t1_n, t2_n, t1_p, t2_p)
+                self.cleanup_for_service_vm_ovs(mgmt_port, t1_n, t1_sub, t1_p,
+                                                t2_n, t2_sub, t2_p)
                 mgmt_port = None
                 t1_n, t1_p, t2_n, t2_p = [], [], [], []
         return mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p

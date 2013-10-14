@@ -612,7 +612,8 @@ class L3_router_appliance_db_mixin(extraroute_db.ExtraRoute_db_mixin):
                 else:
                     # Fundamental error like could not contact Nova
                     # Cleanup anything we created
-                    svm.cleanup_for_service_vm(mgmt_port, t1_n, t1_sub, t1_p,
+                    svm.cleanup_for_service_vm(self._plugin, mgmt_port,
+                                               t1_n, t1_sub, t1_p,
                                                t2_n, t2_sub, t2_p)
                     return hosting_entities
         return hosting_entities
