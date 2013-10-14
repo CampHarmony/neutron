@@ -180,41 +180,44 @@ class ServiceVMManager:
         t1_sub, t2_sub = [], []
         if mgmt_nw_id is not None and tenant_id is not None:
             # Create port for mgmt interface
-            p_spec = {'port': {'tenant_id': tenant_id,
-                               'admin_state_up': True,
-                               'name': 'mgmt',
-                               'network_id': mgmt_nw_id,
-                               'mac_address': attributes.ATTR_NOT_SPECIFIED,
-                               'fixed_ips': attributes.ATTR_NOT_SPECIFIED,
-                               'n1kv:profile_id': kwargs['mgmt_p_p_id'],
-                               'device_id': "",
-                               'device_owner': ""}}
+            p_spec = {'port': {
+                'tenant_id': tenant_id,
+                'admin_state_up': True,
+                'name': 'mgmt',
+                'network_id': mgmt_nw_id,
+                'mac_address': attributes.ATTR_NOT_SPECIFIED,
+                'fixed_ips': attributes.ATTR_NOT_SPECIFIED,
+                'n1kv:profile_id': kwargs.get('mgmt_p_p_id', {}).get('id'),
+                'device_id': "",
+                'device_owner': ""}}
             try:
-                mgmt_port = self._core_plugin.create_port(self._context, p_spec)
+                mgmt_port = self._core_plugin.create_port(self._context,
+                                                          p_spec)
                 # The trunk networks
                 n_spec = {'network': {'tenant_id': tenant_id,
                                       'admin_state_up': True,
                                       'name': constants.T1_NETWORK_NAME,
                                       'shared': False}}
-                # Until Nova allows spinning up VMs with vifs on networks without
-                # subnet(s) we create "dummy" subnets for the trunk networks
-                sub_spec = {'subnet': {'tenant_id': tenant_id,
-                                       'admin_state_up': True,
-                                       'cidr': constants.SUB_PREFX,
-                                       'enable_dhcp': False,
-                                       'gateway_ip': attributes.ATTR_NOT_SPECIFIED,
-                                       'allocation_pools': attributes.ATTR_NOT_SPECIFIED,
-                                       'ip_version': 4,
-                                       'dns_nameservers': attributes.ATTR_NOT_SPECIFIED,
-                                       'host_routes': attributes.ATTR_NOT_SPECIFIED
-                                       }
-                            }
+                # Until Nova allows spinning up VMs with VIFs on
+                # networks without subnet(s) we create "dummy" subnets
+                # for the trunk networks
+                sub_spec = {'subnet': {
+                    'tenant_id': tenant_id,
+                    'admin_state_up': True,
+                    'cidr': constants.SUB_PREFX,
+                    'enable_dhcp': False,
+                    'gateway_ip': attributes.ATTR_NOT_SPECIFIED,
+                    'allocation_pools': attributes.ATTR_NOT_SPECIFIED,
+                    'ip_version': 4,
+                    'dns_nameservers': attributes.ATTR_NOT_SPECIFIED,
+                    'host_routes': attributes.ATTR_NOT_SPECIFIED}}
                 for i in xrange(0, max_hosted):
                     # Create T1 trunk network for this router
                     indx = str(i + 1)
                     n_spec['network'].update(
                         {'name': constants.T1_NETWORK_NAME + indx,
-                         'n1kv:profile_id': kwargs['t1_n_p_id']})
+                         'n1kv:profile_id': kwargs.get('t1_n_p_id',
+                                                       {}).get('id')})
                     t1_n.append(self._core_plugin.create_network(
                         self._context, n_spec))
                     LOG.debug(_('Created T1 network with name %(name)s and '
@@ -232,7 +235,8 @@ class ServiceVMManager:
                         {'name': constants.T1_PORT_NAME + indx,
                          'network_id': t1_n[i]['id'],
                          'fixed_ips': [{'subnet_id': t1_sub[i]}],
-                         'n1kv:profile_id': kwargs['t1_p_p_id']})
+                         'n1kv:profile_id': kwargs.get('t1_p_p_id',
+                                                       {}).get('id')})
                     t1_p.append(self._core_plugin.create_port(self._context,
                                                               p_spec))
                     LOG.debug(_('Created T1 port with name %(name)s,  '
@@ -243,7 +247,8 @@ class ServiceVMManager:
                     # Create T2 trunk network for this router
                     n_spec['network'].update(
                         {'name': constants.T2_NETWORK_NAME + indx,
-                         'n1kv:profile_id': kwargs['t2_n_p_id']})
+                         'n1kv:profile_id': kwargs.get('t2_n_p_id',
+                                                       {}).get('id')})
                     t2_n.append(self._core_plugin.create_network(self._context,
                                                                  n_spec))
                     LOG.debug(_('Created T2 network with name %(name)s and '
@@ -261,7 +266,8 @@ class ServiceVMManager:
                         {'name': constants.T2_PORT_NAME + indx,
                          'network_id': t2_n[i]['id'],
                          'fixed_ips': [{'subnet_id': t2_sub[i]['id']}],
-                         'n1kv:profile_id': kwargs['t2_p_p_id']})
+                         'n1kv:profile_id': kwargs.get('t2_p_p_id',
+                                                       {}).get('id')})
                     t2_p.append(self._core_plugin.create_port(self._context,
                                                               p_spec))
                     LOG.debug(_('Created T2 port with name %(name)s,  '
@@ -273,7 +279,7 @@ class ServiceVMManager:
                 self.cleanup_for_service_vm(mgmt_port, t1_n, t2_n, t1_p, t2_p)
                 mgmt_port = None
                 t1_n, t1_p, t2_n, t2_p = [], [], [], []
-        return (mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p)
+        return mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p
 
     def create_service_vm_resources_ovs(self, mgmt_nw_id, csr_mgmt_sec_grp_id,
                                         tenant_id, max_hosted):
@@ -377,7 +383,7 @@ class ServiceVMManager:
                 self.cleanup_for_service_vm(mgmt_port, t1_n, t2_n, t1_p, t2_p)
                 mgmt_port = None
                 t1_n, t1_p, t2_n, t2_p = [], [], [], []
-        return (mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p)
+        return mgmt_port, t1_n, t1_sub, t1_p, t2_n, t2_sub, t2_p
 
     # TODO(bob-melander): Move this to fake_service_vm_lib.py file
     # with FakeServiceVMManager
