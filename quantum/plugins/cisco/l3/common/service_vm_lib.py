@@ -71,14 +71,15 @@ class ServiceVMManager:
         return res
 
     def delete_service_vm(self, id, mgmt_nw_id, delete_networks=False):
-        nets_to_delete = []
+        to_delete = []
         if delete_networks:
             ports = self._core_plugin.get_ports(self._context,
                                                 filters={'device_id': [id]})
 
             for port in ports:
                 if port['network_id'] != mgmt_nw_id:
-                    nets_to_delete.append(port['network_id'])
+                    to_delete.append({'subnet': port['fixed_ips']['subnet_id'],
+                                      'net': port['network_id']})
         result = True
         try:
             self._nclient.servers.delete(id)
@@ -90,15 +91,20 @@ class ServiceVMManager:
             LOG.error(_('Failed to delete service VM instance %(id)s, '
                         'due to %(err)s'), {'id': id, 'err': e})
             result = False
-        for net in nets_to_delete:
+        for ids in to_delete:
             try:
-                #TODO(bobmel): delete subnets first as required by N1kv plugin
-                self._core_plugin.delete_network(self._context, net)
+                # N1kv plugin requires that subnet is deleted first
+                self._core_plugin.delete_subnet(self._context, ids['subnet'])
+            except q_exc.QuantumException as e:
+                LOG.error(_('Failed to delete subnet %(subnet_id)s for '
+                            'service VM %(vm_id) due to %(err)s'),
+                          {'subnet_id': ids['subnet'], 'vm_id': id, 'err': e})
+            try:
+                self._core_plugin.delete_network(self._context, ids['net'])
             except q_exc.QuantumException as e:
                 LOG.error(_('Failed to delete network %(net_id)s for service '
-                            'VM %(vm_id) due to %(err)s'), {'net_id': net,
-                                                            'vm_id': id,
-                                                            'err': e})
+                            'VM %(vm_id) due to %(err)s'),
+                          {'net_id': ids['net'], 'vm_id': id, 'err': e})
         return result
 
     def cleanup_for_service_vm(self, plugin, mgmt_port, t1_n, t1_sub, t1_p,
@@ -245,7 +251,6 @@ class ServiceVMManager:
                     p_spec['port'].update(
                         {'name': constants.T1_PORT_NAME + indx,
                          'network_id': t1_n[i]['id'],
-#                         'fixed_ips': [{'subnet_id': t1_sub[i]}],
                          'n1kv:profile_id': kwargs.get('t1_p_p_id',
                                                        {}).get('id')})
                     t1_p.append(self._core_plugin.create_port(self._context,
@@ -276,7 +281,6 @@ class ServiceVMManager:
                     p_spec['port'].update(
                         {'name': constants.T2_PORT_NAME + indx,
                          'network_id': t2_n[i]['id'],
-#                         'fixed_ips': [{'subnet_id': t2_sub[i]['id']}],
                          'n1kv:profile_id': kwargs.get('t2_p_p_id',
                                                        {}).get('id')})
                     t2_p.append(self._core_plugin.create_port(self._context,
